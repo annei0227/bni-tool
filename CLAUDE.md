@@ -9,7 +9,7 @@
 | 項目 | 值 |
 |-----|---|
 | 類型 | `general` |
-| GitHub | `tnfsp` |
+| GitHub | `annei0227` |
 | Visibility | `Public` |
 | Repo | `bni-tool` |
 | 狀態 | `done` |
