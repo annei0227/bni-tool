@@ -146,6 +146,25 @@
 
 ---
 
+## Session: 2026-07-02 10:24（收工記錄）
+
+### 本日進度總結
+一天內從概念到可用系統：/concept 定案 → 互動原型上線（GitHub Pages）→ 富樂 LIVE 深度分析 → PRD v0.2 常駐平台 → /coder 完整實作並通過 CI。本機 `npm run dev` 後 http://localhost:3300 即可試用（DEV_AUTH 假登入，王大明=幹部）。
+
+### 等待用戶（annei）的五件事
+1. **確認技術棧偏移**：Prisma（dev SQLite / prod Supabase Postgres）＋應用層授權取代 RLS——不同意可改回
+2. **提供 PALMS Excel 樣本**：校準匯入欄位別名與紅綠燈門檻（現為 Power of One 慣例預設值）
+3. **申請三個帳號**：LINE Developers（Login＋Messaging API 兩個 channel）、Supabase、Vercel；金鑰直接填環境變數，勿貼對話
+4. **兩個延後項目認可**：推播用量監控（等 LINE 上線）、培訓率追蹤（需培訓場次資料來源）
+5. **參數確認**：時段 60 分鐘一格、預約視窗 14 天（`src/lib/constants.ts` 常數可調）
+
+### 下次啟動
+- 若已有 PALMS 樣本 → 校準 `palms-import.ts` 別名與 `palms-scoring.ts` 門檻
+- 若已有 LINE 憑證 → 實測 Phase 3，接著部署 Supabase＋Vercel
+- 都沒有 → 可先做 `/reviewer` 全面審查，或把原型連結發分會群收意見
+
+---
+
 <!-- 新的 session 記錄請加在這裡，格式如下：
 
 ## Session: YYYY-MM-DD HH:MM
