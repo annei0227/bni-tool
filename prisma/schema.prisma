@@ -1,0 +1,143 @@
+// bni-tool 資料模型
+// 開發：SQLite；正式部署：改 provider = "postgresql" 指向 Supabase
+// SQLite 不支援 enum，狀態欄位用 String，合法值定義於 src/lib/constants.ts
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 成員 =====
+model Member {
+  id               Int     @id @default(autoincrement())
+  name             String
+  company          String  @default("")
+  profession       String  @default("") // 專業別（例：住宅油漆工程業）
+  industryCategory String  @default("") // 產業服務鏈分類（例：室內設計師）
+  speechOrder      Int?    // 25 秒報告順序
+  avatarColor      String  @default("#C0574F")
+  role             String  @default("member") // member | officer
+  active           Boolean @default(true)
+  inviteCode       String? @unique // 邀請制：LINE 首次登入時輸入綁定
+  lineUserId       String? @unique
+  createdAt        DateTime @default(now())
+
+  patterns      AvailabilityPattern[]
+  overrides     AvailabilityOverride[]
+  sentBookings  Booking[] @relation("requester")
+  recvBookings  Booking[] @relation("recipient")
+  notifications Notification[]
+  palmsStats    PalmsMemberStat[]
+}
+
+// ===== 空檔：每週固定模式 =====
+model AvailabilityPattern {
+  id       Int    @id @default(autoincrement())
+  memberId Int
+  weekday  Int    // 0=日 ... 6=六
+  startMin Int    // 從 00:00 起算的分鐘數
+  endMin   Int
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+}
+
+// ===== 空檔：一次性加開 / 例外挖除 =====
+model AvailabilityOverride {
+  id       Int     @id @default(autoincrement())
+  memberId Int
+  date     String  // 'YYYY-MM-DD'（台北時區當地日期）
+  type     String  // extra（加開）| block（不開放；startMin/endMin 為 null 表整天）
+  startMin Int?
+  endMin   Int?
+  member   Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, date])
+}
+
+// ===== 預約 =====
+// 狀態機：requested → confirmed → completed
+//              ↘ declined / cancelled     confirmed → cancelled
+// 改期：proposed* 欄位存提案，另一方接受後覆寫 date/startMin
+model Booking {
+  id          Int     @id @default(autoincrement())
+  requesterId Int
+  recipientId Int
+  date        String  // 'YYYY-MM-DD'
+  startMin    Int
+  durationMin Int     @default(60)
+  status      String  @default("requested") // requested|confirmed|declined|cancelled|completed
+  message     String  @default("")
+  // 改期提案（任一方可發起）
+  proposedDate     String?
+  proposedStartMin Int?
+  proposedById     Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requester Member @relation("requester", fields: [requesterId], references: [id])
+  recipient Member @relation("recipient", fields: [recipientId], references: [id])
+
+  @@index([requesterId, status])
+  @@index([recipientId, status])
+  @@index([date])
+}
+
+// ===== 站內通知（LINE 推播的事件底層）=====
+model Notification {
+  id        Int      @id @default(autoincrement())
+  memberId  Int
+  type      String   // booking_requested|booking_confirmed|booking_declined|booking_cancelled|reschedule_proposed|reschedule_accepted|booking_reminder|system
+  title     String
+  body      String   @default("")
+  linkPath  String   @default("") // 站內連結，例 /bookings
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, readAt])
+}
+
+// ===== PALMS 匯入（幹部每週上傳中心區 Excel）=====
+model PalmsSnapshot {
+  id           Int      @id @default(autoincrement())
+  periodLabel  String   // 例 "2026/01—2026/06"
+  weekCount    Int      // 統計週數
+  importedAt   DateTime @default(now())
+  importedBy   String   @default("")
+  note         String   @default("")
+  stats        PalmsMemberStat[]
+}
+
+model PalmsMemberStat {
+  id           Int    @id @default(autoincrement())
+  snapshotId   Int
+  memberName   String // Excel 上的姓名（用於對照）
+  memberId     Int?   // 成功對上站內成員時填入
+  absences     Int    @default(0) // 缺席次數
+  lates        Int    @default(0)
+  referralsIn  Int    @default(0) // 收到引薦
+  referralsOut Int    @default(0) // 給出引薦
+  visitors     Int    @default(0) // 帶來賓
+  oneToOnes    Int    @default(0)
+  ceu          Int    @default(0) // 培訓學分
+  tyfcb        Float  @default(0) // 感謝金額（萬）
+  snapshot     PalmsSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  member       Member?       @relation(fields: [memberId], references: [id])
+
+  @@index([snapshotId])
+}
+
+// ===== 賽季（競賽模組預留：只建表不實作功能）=====
+model Season {
+  id        Int      @id @default(autoincrement())
+  name      String   // 例 "第 1 屆小組競賽"
+  startDate String
+  endDate   String
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bni: #cf2030;
+  --color-bni-dark: #a81824;
+  --color-bni-soft: #fcebec;
+  --color-ink: #1f2430;
+  --color-soft: #f4f3f1;
+}
+
+body {
+  background: var(--color-soft);
+  color: var(--color-ink);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC",
+    "Microsoft JhengHei", sans-serif;
+}

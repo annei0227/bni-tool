@@ -41,10 +41,11 @@
 
 ## 資料庫
 
-### 主要資料庫
-- Supabase（PostgreSQL）
-  - 主要資料表：members、availability_patterns（每週固定模式）、availability_overrides（一次性時段／例外挖除）、bookings（含狀態機：requested → confirmed → completed / cancelled / declined）、one_on_one_records
-  - Row Level Security：僅登入成員可讀分會資料
+### ORM 與資料庫（2026-07-02 變更）
+- **Prisma ORM**：開發環境 SQLite（本機無 Docker，Supabase local 不可行）；正式環境改 `provider = "postgresql"` 指向 Supabase Postgres
+- 主要資料表：Member、AvailabilityPattern（每週固定模式）、AvailabilityOverride（一次性/例外）、Booking（狀態機）、Notification、PalmsSnapshot/PalmsMemberStat、Season（競賽模組預留）
+- **授權模型變更**：原規劃 Supabase RLS → 改為**應用層授權**（每個 server action 驗證 session 與資源所有權；幹部功能 `requireOfficer` 把關）。理由：app 是唯一 DB client、Prisma 直連下 RLS 無作用點；正式上 Supabase 後可再補 RLS 當第二層防線
+- 變更屬技術棧偏移，已列入待用戶確認清單
 
 ### 快取
 - 不需要（規模極小）
@@ -103,3 +104,4 @@
 | 日期 | 變更內容 |
 |------|----------|
 | 2026-07-02 | 初版建立 |
+| 2026-07-02 | 導入 Prisma（dev SQLite / prod Postgres）；授權改應用層；新增 exceljs（PALMS 匯入）；時間策略改台北當地日期字串＋分鐘數 |

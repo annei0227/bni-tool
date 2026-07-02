@@ -114,8 +114,35 @@
 
 ### 待辦事項
 - [ ] 向用戶要一份 PALMS Excel 樣本（Phase 4 前置）
-- [ ] 執行 `/coder` 開始 Phase 1
+- [x] 執行 `/coder` 開始 Phase 1
 - [ ] LINE channel／Supabase／Vercel 帳號（時程不變）
+
+---
+
+## Session: 2026-07-02 09:46（/coder 全量實作 Phase 1–5）
+
+### 變更摘要
+- 完整實作平台：Next.js 15＋TypeScript＋Tailwind v4＋Prisma，21 條路由
+- 核心：空檔引擎（純函數）、預約狀態機、改期提案流、站內通知、一對一矩陣（季度）
+- 常駐層：名錄（產業鏈/25秒）、PALMS 匯入（exceljs 寬鬆欄名比對）、紅綠燈六項計分、預測綠燈補救名單（直連預約）、目標計算機
+- LINE：Login OAuth＋邀請碼綁定、推播（未設定自動停用）、webhook 簽章驗證、每日提醒 cron
+- 品質：30 個 Vitest 單元測試、tsc strict 全過、production build 成功、瀏覽器端到端驗證（請求→確認→改期→接受、空檔 CRUD、權限分級）
+- GitHub Actions CI（tsc/test/build）、README 重寫、.env.example
+
+### 決策記錄
+- **技術棧偏移（待用戶確認）**：本機無 Docker → Supabase local 不可行，改 Prisma（dev SQLite / prod Supabase Postgres）；RLS 改為應用層授權（每 action 驗證），部署後可補 RLS 第二層
+- **時間策略**：捨 UTC 儲存，改台北當地日期字串＋當日分鐘數（分會活動固定台灣，消滅時區換算 bug 面）
+- **時段粒度 60 分鐘**、預約視窗 14 天（常數可調）
+- **改期＝提案制**：proposed* 欄位存提案，對方接受即改期並直接 confirmed
+- **requested 也占用時段**：避免同時段被多人請求撞單
+- **燈號門檻參數化**：`palms-scoring.ts` THRESHOLDS 預設值為 Power of One 慣例，待與中心區規則核對
+
+### 已知限制／待辦
+- [ ] LINE 三組憑證（Login channel、Messaging API、webhook）→ 實測 3.1–3.3
+- [ ] 實際 PALMS Excel 樣本 → 校準匯入欄位別名與燈號門檻
+- [ ] Supabase＋Vercel 部署（README 有步驟）
+- [ ] 3.4 推播用量監控、4.6 培訓率（延後）
+- [ ] Chrome extension 合成點擊與 React 19 表單不相容（真人操作正常，不影響產品）
 
 ---
 

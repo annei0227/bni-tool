@@ -29,3 +29,11 @@ out/
 # Temporary
 tmp/
 temp/
+
+# Next.js / Prisma
+.next/
+next-env.d.ts
+*.tsbuildinfo
+prisma/dev.db
+prisma/dev.db-journal
+src/generated/

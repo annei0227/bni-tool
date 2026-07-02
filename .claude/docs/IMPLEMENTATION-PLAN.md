@@ -27,51 +27,51 @@ LINE channel 與 Supabase 專案尚未申請（需用戶操作）。因此：
 
 ### Phase 1: 基礎建設
 
-- [ ] 1.1 建立 Next.js 專案（App Router + TypeScript + Tailwind），ESLint/Prettier/Vitest 設定
-- [ ] 1.2 設計資料庫 schema 與 migration：`members`、`availability_patterns`（每週固定模式）、`availability_overrides`（一次性時段/例外挖除，同表以 type 區分）、`bookings`（狀態機：requested → confirmed → completed / cancelled / declined）、`one_on_one_records`
-- [ ] 1.3 Supabase 專案連接與 RLS 政策（僅登入成員可讀寫分會資料）
-- [ ] 1.4 開發模式假登入（`DEV_AUTH=true` 時可選任一 seed 成員身分登入），auth 介面抽象化以便 Phase 3 換成 LINE Login
-- [ ] 1.5 Seed 資料：10 名假成員與範例空檔，供開發與展示
-- [ ] 1.6 GitHub Actions：lint + test
+- [x] 1.1 建立 Next.js 專案（App Router + TypeScript + Tailwind v4），tsc/Vitest 設定
+- [x] 1.2 資料庫 schema（Prisma）：Member、AvailabilityPattern、AvailabilityOverride、Booking、Notification、Palms*、Season（預留）
+- [x] 1.3 ~~Supabase RLS~~ → 改 Prisma＋應用層授權（見 TECHSTACK 變更記錄；待用戶確認）
+- [x] 1.4 開發模式假登入（`DEV_AUTH=true`），auth 抽象化（session cookie 與登入方式解耦）
+- [x] 1.5 Seed：10 名假成員、空檔、預約、PALMS 快照
+- [x] 1.6 GitHub Actions：tsc + test + build
 
 ### Phase 2: 核心功能（MVP 主體）
 
-- [ ] 2.1 **空檔計算引擎**（純函數＋Vitest 完整測試）：輸入固定模式、一次性時段、例外、已成立預約，輸出指定日期範圍的可約時段；含時區（固定 Asia/Taipei）與重疊處理
-- [ ] 2.2 成員列表與個人頁：姓名、公司、專業別、頭像、可約時段預覽
-- [ ] 2.3 空檔管理 UI：固定模式 CRUD、一次性時段 CRUD、例外挖除，全部可隨時修改（PRD 明確要求）
-- [ ] 2.4 預約流程：瀏覽時段 → 送出請求（附留言）→ 對方確認/提議改期/婉拒；已成立預約可改期、取消
-- [ ] 2.5 我的預約頁：待我回應、待對方回應、即將到來、歷史紀錄
-- [ ] 2.6 站內通知中心（鈴鐺）：LINE 推播上線前的通知底層，事件先落 `notifications` 表
-- [ ] 2.7 一對一矩陣：季度視圖（約過/沒約過/進行中）、完成打卡、從矩陣直接發起預約
+- [x] 2.1 **空檔計算引擎**（純函數＋15 個 Vitest 測試）：固定模式＋加開−挖除−占用；60 分時段、殘段處理、今日過時過濾、雙方行程交集
+- [x] 2.2 成員列表與個人頁（含最近可約時段預覽、本季狀態標籤）
+- [x] 2.3 空檔管理 UI：固定模式/加開/整天挖除 CRUD
+- [x] 2.4 預約流程：請求（附留言）→ 確認/婉拒/收回；改期提案→接受/維持原時間；取消；完成打卡（當日起可按）
+- [x] 2.5 我的預約頁：四區塊＋歷史
+- [x] 2.6 站內通知中心＋未讀 badge（事件落 Notification 表，LINE 為第二管道）
+- [x] 2.7 一對一矩陣：季度統計、三色格、點格直達預約
 
 ### Phase 3: LINE 整合
 
 > 前置（需用戶操作）：LINE Developers 建立 Login channel＋Messaging API channel、Supabase 雲端專案（若 Phase 1 用本機）、Vercel 帳號連 GitHub
 
-- [ ] 3.1 LINE Login OAuth 接入，替換假登入；首次登入綁定成員資料（邀請制：管理員預建名單，登入時配對）
-- [ ] 3.2 Messaging API 推播：新請求、確認、改期、取消（合併訊息控制用量，單場預約全流程 ≤ 3 則）
-- [ ] 3.3 Vercel Cron：每日 20:00 發送「明日約訪提醒」（多場合併為一則）
-- [ ] 3.4 推播用量監控：每月用量落表，接近 200 則免費上限時通知管理員
+- [x] 3.1 LINE Login OAuth＋邀請碼綁定流程（程式完成，**待 channel 憑證實測**）
+- [x] 3.2 Messaging API 推播（單則合併訊息；未設定時自動只走站內通知）＋ webhook 簽章驗證
+- [x] 3.3 Vercel Cron 每日提醒（台北 20:00，多場合併一則；`CRON_SECRET` 驗證）
+- [ ] 3.4 推播用量監控（待 LINE 上線後實作）
 
 ### Phase 4: PALMS 數據模組（PRD v0.2 新增）
 
 > 前置（需用戶操作）：取得一份實際的 PALMS Excel 樣本（欄位格式）
 
-- [ ] 4.1 資料庫擴充：`palms_snapshots`（每週快照）、`palms_member_stats`、`training_sessions`；members 加產業鏈分類與 25 秒順序欄位；schema 預留 `season_id` 維度（賽季競賽模組用，暫不實作）
-- [ ] 4.2 幹部權限（role: member / officer）與匯入後台：上傳 Excel → SheetJS/後端解析 → 入庫，含格式驗證與錯誤報告
-- [ ] 4.3 會員名錄＋產業服務鏈頁：分類瀏覽、搜尋、25 秒順序表
-- [ ] 4.4 紅綠燈表：依中心區計分規則計算燈號，歷月檢視
-- [ ] 4.5 預測綠燈＋補救名單：試算達標缺口，列出「補一對一／引薦即轉綠」名單，**名單直接連到預約流程**
-- [ ] 4.6 培訓率追蹤（輕量）
+- [x] 4.1 資料庫擴充：PalmsSnapshot/PalmsMemberStat、Member 加產業鏈與 25 秒順序、Season 表預留
+- [x] 4.2 幹部權限（member/officer）＋匯入後台：exceljs 解析、欄名寬鬆比對、缺欄警告、姓名對照回報（**欄位別名待實際 PALMS 樣本校準**）
+- [x] 4.3 名錄：產業服務鏈分類＋25 秒順序雙視圖
+- [x] 4.4 紅綠燈表：六項計分（門檻參數化於 `palms-scoring.ts`，**預設值待與中心區規則核對**）
+- [x] 4.5 預測綠燈＋補救名單：80% 目標缺口、「差一級轉綠」名單直連預約、個人補救提示
+- [ ] 4.6 培訓率追蹤（延後：需確認分會培訓場次資料來源）
 
 ### Phase 5: 測試、部署與完善
 
-- [ ] 5.1 核心流程整合測試（預約狀態機、RLS 權限、PALMS 匯入）
-- [ ] 5.2 安全檢查：金鑰只在環境變數、RLS 全表覆蓋（特別是 PALMS 個資）、LINE webhook 簽章驗證
-- [ ] 5.3 Vercel 正式部署 + `.env.example` 與 README 部署文件
-- [ ] 5.4 管理員功能：成員邀請/停用、產業鏈分類維護
-- [ ] 5.5 手機實機檢查（LINE in-app browser 開啟流程）
-- [ ] 5.6 分會試用（先 3–5 人小圈測試，再全員推廣）
+- [x] 5.1 核心邏輯 30 個單元測試＋瀏覽器端到端手動驗證（預約→確認→改期→接受、空檔 CRUD、PALMS 解析）
+- [x] 5.2 安全檢查：金鑰只在環境變數（.env 不進版控）、所有 action 驗證登入/所有權/角色、webhook 簽章、cron secret
+- [x] 5.3 `.env.example`＋README 部署文件（**Vercel 實際部署待帳號**）
+- [x] 5.4 管理員功能：成員新增（自動邀請碼）/停用/幹部升降、產業鏈與順序欄位
+- [ ] 5.5 手機實機檢查（待部署後）
+- [ ] 5.6 分會試用（待部署後）
 
 ---
 
@@ -88,11 +88,11 @@ LINE channel 與 Supabase 專案尚未申請（需用戶操作）。因此：
 
 | 階段 | 狀態 | 完成度 |
 |------|------|--------|
-| Phase 1 基礎建設 | 未開始 | 0% |
-| Phase 2 預約核心 | 未開始 | 0% |
-| Phase 3 LINE 整合 | 未開始（等 LINE channel） | 0% |
-| Phase 4 PALMS 數據模組 | 未開始（等 PALMS Excel 樣本） | 0% |
-| Phase 5 測試部署 | 未開始 | 0% |
+| Phase 1 基礎建設 | 完成 | 100% |
+| Phase 2 預約核心 | 完成 | 100% |
+| Phase 3 LINE 整合 | 程式完成，待 channel 憑證實測 | 75% |
+| Phase 4 PALMS 數據模組 | 完成（欄位別名與燈號門檻待實際資料校準） | 85% |
+| Phase 5 測試部署 | 本機驗證完成，待 Vercel/Supabase 部署 | 65% |
 
 ---
 

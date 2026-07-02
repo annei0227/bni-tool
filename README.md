@@ -1,100 +1,45 @@
-# Claude Code 專案模板
+# 富禮一對一（bni-tool）
 
-這是一個使用 Claude Code 進行開發的專案模板框架。透過 Subagent 架構，讓 AI 協助你從概念設計到專案完成。
+BNI 富禮分會的**常駐營運平台**：一對一約訪引擎＋會員名錄＋PALMS 紅綠燈儀表板。
 
-## 快速開始
+## 功能
 
-### 1. 複製此模板
-將此資料夾複製到你的新專案目錄。
+- **一對一預約**：混合制空檔登記（每週固定模式＋一次性加開＋例外挖除）、請求確認制、改期提案、完成打卡
+- **一對一矩陣**：每季「約過誰／還沒約誰」一目瞭然，直接從矩陣發起預約
+- **會員名錄**：產業服務鏈分類、25 秒報告順序
+- **PALMS 數據**：幹部上傳中心區 Excel → 紅綠燈表＋預測綠燈補救名單（名單直連預約）
+- **LINE 整合**：LINE Login 登入、預約通知推播、每日行程提醒（設定環境變數後啟用）
+- **目標計算機**：年營業額反推每週一對一次數
 
-### 2. 啟動 Claude Code
+## 開發
+
 ```bash
-cd your-project
-claude
+npm install
+cp .env.example .env       # 填 SESSION_SECRET；DEV_AUTH=true 啟用假登入
+npm run db:push            # 建立 SQLite 資料庫
+npm run db:seed            # 假資料（10 名成員）
+npm run dev                # http://localhost:3300
 ```
 
-### 3. 開始設計專案
-```
-/concept
-```
-與 Concept 設計師討論你的專案概念、需求與技術選擇。
+品質檢查：`npm run lint`（tsc）、`npm test`（Vitest，空檔引擎／狀態機／PALMS 計分）。
 
-### 4. 規劃與執行
-```
-/pm
-```
-讓 Project Manager 建立實作計畫，並協調各個 subagent 完成任務。
+## 部署（Vercel + Supabase）
 
-## 架構說明
+1. Supabase 建專案，取得 Postgres 連線字串
+2. `prisma/schema.prisma` 的 `provider` 改為 `postgresql`，`npx prisma db push`
+3. Vercel 匯入 GitHub repo，設定環境變數（見 `.env.example`；`DEV_AUTH` 不要設）
+4. LINE Developers 建立 Login channel 與 Messaging API channel，填入對應變數；webhook 指向 `/api/line/webhook`
+5. `vercel.json` 已含每日 20:00（台北）提醒 Cron，需設 `CRON_SECRET`
 
-```
-.claude/
-├── commands/           # Subagent 指令
-│   ├── concept.md      # 概念設計師 - 負責 PRD、技術棧設計
-│   └── pm.md           # 專案經理 - 負責規劃、調度、追蹤
-├── docs/               # 專案文件
-│   ├── PRD.md          # 產品需求文件
-│   ├── TECHSTACK.md    # 技術棧說明
-│   └── IMPLEMENTATION-PLAN.md  # 實作計畫
-└── logs/
-    └── SESSION-LOG.md  # 工作記錄（每次 session 累積）
+## 架構
 
-CLAUDE.md               # Claude Code 讀取的專案說明
-README.md               # 本檔案（給人類讀取）
-```
+- Next.js 15（App Router、Server Actions）＋ TypeScript ＋ Tailwind v4
+- Prisma ORM：開發 SQLite／正式 Postgres（Supabase）
+- 授權：HMAC 簽署 session cookie；所有 server action 驗證登入與資源所有權；幹部功能雙重把關
+- 時間策略：台北當地日期字串＋當日分鐘數（分會活動固定於台灣）
 
-## 工作流程
+`docs/` 為早期需求討論用的靜態互動原型（GitHub Pages），與正式程式碼無關。
 
-```
-1. /concept  →  討論專案概念，產出 PRD + TECHSTACK
-        ↓
-2. /pm       →  制定 IMPLEMENTATION-PLAN，建立需要的 subagent
-        ↓
-3. /xxx      →  PM 調動各 subagent 執行任務
-        ↓
-4. 更新 Log  →  記錄進度，方便接力開發
-        ↓
-5. Git Push  →  保存變更
-```
+## 專案文件
 
-## Subagent 說明
-
-### /concept - 概念設計師
-- 與你討論專案的目標、功能、用戶
-- 撰寫與維護 PRD（產品需求文件）
-- 決定技術棧，撰寫 TECHSTACK
-- 設計專案需要的其他 subagent
-
-### /pm - 專案經理
-- 根據 PRD 撰寫實作計畫
-- 動態建立新的 subagent（如 /coder, /tester）
-- 調度 subagent 完成任務
-- 追蹤進度，維護 log
-
-### 動態 Subagent
-PM 可根據專案需求建立其他 subagent，例如：
-- `/coder` - 撰寫程式碼
-- `/tester` - 撰寫測試
-- `/reviewer` - Code review
-- `/devops` - 部署相關
-
-## Log 系統
-
-每次使用 Claude Code 工作後，會在 `.claude/logs/SESSION-LOG.md` 記錄：
-- **變更摘要**：完成了什麼
-- **決策記錄**：做了什麼決定、為什麼
-- **待辦事項**：下次要繼續的工作
-
-這讓你可以隨時中斷，下次繼續接力開發。
-
-## 自訂與擴展
-
-### 新增 Subagent
-在 `.claude/commands/` 建立新的 `.md` 檔案即可。
-
-### 修改流程
-編輯 `CLAUDE.md` 或各 subagent 的 `.md` 檔案來調整行為。
-
-## License
-
-MIT
+`.claude/docs/`：PRD、TECHSTACK、IMPLEMENTATION-PLAN、富樂 LIVE 競品分析。
