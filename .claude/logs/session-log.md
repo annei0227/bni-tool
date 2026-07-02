@@ -79,6 +79,25 @@
 
 ---
 
+## Session: 2026-07-02 09:15（互動原型＋競品掃描）
+
+### 變更摘要
+- 建立互動原型 `docs/index.html`（單檔、假資料），供分會成員討論需求
+- 開啟 GitHub Pages：https://annei0227.github.io/bni-tool/（master /docs）
+- 原型已在 Chrome 實測：預約流程、確認、矩陣、空檔管理全部走通
+- 掃描富樂分會工具「富樂 LIVE」（lab.lamigifts.com/fule23）並產出功能報告
+
+### 決策記錄
+- 原型走純前端單檔（vanilla JS），不用框架：目的只是收斂需求，用完即棄，不會成為正式版程式碼
+- 原型放 repo 根目錄 `docs/`（GitHub Pages 慣例），與 `.claude/docs/`（專案文件）分開
+- 富樂 LIVE 是「小組競賽/遊戲化」平台，與我們的「約訪排程」定位不同、不衝突；可借鏡：角色分級入口（會員/組長/核心團隊）、一對一目標計算機、遊戲化激勵
+
+### 待辦事項
+- [ ] 把原型連結分享到分會 LINE 群收集意見（說明頁已附 5 個討論題）
+- [ ] 依會員回饋更新 PRD，再執行 `/coder`
+
+---
+
 <!-- 新的 session 記錄請加在這裡，格式如下：
 
 ## Session: YYYY-MM-DD HH:MM
