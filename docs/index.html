@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>富禮一對一 · 互動原型</title>
+<style>
+  :root{
+    --red:#CF2030; --red-dark:#A81824; --red-soft:#FCEBEC;
+    --bg:#F4F3F1; --card:#FFFFFF; --line:#E7E5E1;
+    --ink:#1F2430; --muted:#6E7480;
+    --green:#1E8E5A; --green-soft:#E6F4EC;
+    --amber:#B97A0A; --amber-soft:#FBF1DC;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg); color:var(--ink); font-size:15px; line-height:1.55;
+  }
+  .app{max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:76px; background:var(--bg)}
+
+  header.top{
+    position:sticky; top:0; z-index:20; background:var(--red); color:#fff;
+    padding:10px 16px; display:flex; align-items:center; gap:10px;
+  }
+  header.top .logo{font-weight:800; font-size:17px; letter-spacing:.5px}
+  header.top .badge{
+    font-size:11px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45);
+    padding:1px 8px; border-radius:999px; white-space:nowrap;
+  }
+  header.top select{
+    margin-left:auto; border:none; border-radius:8px; padding:5px 8px; font-size:13px;
+    background:rgba(255,255,255,.92); color:var(--ink); max-width:150px;
+  }
+
+  .notice{
+    margin:12px 16px 0; padding:10px 12px; background:var(--red-soft); border:1px dashed var(--red);
+    border-radius:10px; font-size:13px; color:var(--red-dark);
+  }
+
+  main{padding:12px 16px 20px}
+  h2.sec{font-size:16px; margin:18px 0 10px; display:flex; align-items:center; gap:8px}
+  h2.sec:first-child{margin-top:6px}
+  h2.sec .count{font-size:12px; color:var(--muted); font-weight:400}
+  .hint{font-size:13px; color:var(--muted); margin:4px 0 12px}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; margin-bottom:10px;
+  }
+  .card.tap{cursor:pointer; transition:transform .06s}
+  .card.tap:active{transform:scale(.985)}
+
+  .member-row{display:flex; align-items:center; gap:12px}
+  .avatar{
+    width:44px; height:44px; border-radius:50%; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:16px;
+  }
+  .member-row .info{flex:1; min-width:0}
+  .member-row .name{font-weight:700}
+  .member-row .prof{font-size:12.5px; color:var(--muted)}
+  .member-row .next{font-size:12px; color:var(--green); white-space:nowrap; text-align:right}
+  .member-row .next.none{color:var(--muted)}
+
+  .pill{display:inline-block; font-size:12px; padding:2px 10px; border-radius:999px; font-weight:600}
+  .pill.green{background:var(--green-soft); color:var(--green)}
+  .pill.amber{background:var(--amber-soft); color:var(--amber)}
+  .pill.red{background:var(--red-soft); color:var(--red-dark)}
+  .pill.gray{background:#EEEDEA; color:var(--muted)}
+
+  .btn{
+    display:inline-block; border:none; border-radius:10px; padding:9px 16px;
+    font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .btn.primary{background:var(--red); color:#fff}
+  .btn.primary:active{background:var(--red-dark)}
+  .btn.ghost{background:#fff; color:var(--ink); border:1px solid var(--line)}
+  .btn.subtle{background:#EEEDEA; color:var(--ink)}
+  .btn.small{padding:6px 12px; font-size:13px}
+  .btn.block{display:block; width:100%; text-align:center}
+  .btn-row{display:flex; gap:8px; margin-top:10px}
+  .btn-row .btn{flex:1}
+
+  .back{background:none; border:none; color:var(--red); font-size:14px; font-weight:700; padding:0; margin-bottom:10px; cursor:pointer; font-family:inherit}
+
+  .slot-day{margin-bottom:14px}
+  .slot-day .d{font-weight:700; font-size:13.5px; margin-bottom:6px}
+  .slots{display:flex; flex-wrap:wrap; gap:8px}
+  .slot{
+    background:#fff; border:1.5px solid var(--red); color:var(--red);
+    border-radius:9px; padding:7px 12px; font-size:13.5px; font-weight:700; cursor:pointer;
+  }
+  .slot:active{background:var(--red-soft)}
+
+  /* matrix */
+  .mgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px}
+  .mcell{
+    border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer;
+    border:1px solid var(--line); background:#fff;
+  }
+  .mcell .avatar{width:36px; height:36px; font-size:13px; margin:0 auto 6px}
+  .mcell .n{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .mcell .s{font-size:11px; margin-top:2px}
+  .mcell.done{background:var(--green-soft); border-color:#BFE3CE}
+  .mcell.done .s{color:var(--green)}
+  .mcell.pending{background:var(--amber-soft); border-color:#EBD9B4}
+  .mcell.pending .s{color:var(--amber)}
+  .mcell.todo .s{color:var(--muted)}
+  .legend{display:flex; gap:14px; font-size:12px; color:var(--muted); margin:8px 0 14px}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px}
+
+  .stat-row{display:flex; gap:10px; margin-bottom:14px}
+  .stat{flex:1; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center}
+  .stat .v{font-size:22px; font-weight:800; color:var(--red)}
+  .stat .l{font-size:12px; color:var(--muted)}
+
+  /* availability editor */
+  .avail-item{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line)}
+  .avail-item:last-child{border-bottom:none}
+  .avail-item .t{flex:1; font-size:14px}
+  .avail-item .t b{font-weight:700}
+  .avail-item .del{background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; padding:2px 6px}
+  .add-form{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center}
+  .add-form select,.add-form input{
+    border:1px solid var(--line); border-radius:8px; padding:7px 8px; font-size:14px; font-family:inherit; background:#fff;
+  }
+
+  /* bookings */
+  .bk-head{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+  .bk-head .info{flex:1}
+  .bk-time{font-size:14px; font-weight:700; margin:2px 0}
+  .bk-msg{font-size:13px; color:var(--muted); background:#F7F6F4; border-radius:8px; padding:8px 10px; margin-top:8px}
+
+  /* modal */
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(20,20,25,.45); z-index:50;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .modal{
+    background:#fff; width:100%; max-width:480px; border-radius:18px 18px 0 0;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  }
+  .modal h3{margin:0 0 4px; font-size:17px}
+  .modal .sub{font-size:13.5px; color:var(--muted); margin-bottom:14px}
+  .modal textarea{
+    width:100%; border:1px solid var(--line); border-radius:10px; padding:10px;
+    font-size:14px; font-family:inherit; min-height:72px; resize:vertical;
+  }
+
+  .toast{
+    position:fixed; bottom:88px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; font-size:13.5px; padding:10px 18px;
+    border-radius:999px; z-index:60; max-width:88%; text-align:center;
+    animation:fadein .2s;
+  }
+  @keyframes fadein{from{opacity:0; transform:translate(-50%,8px)}to{opacity:1; transform:translate(-50%,0)}}
+
+  nav.tabs{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px; background:#fff; border-top:1px solid var(--line);
+    display:flex; z-index:30; padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav.tabs button{
+    flex:1; background:none; border:none; padding:8px 0 7px; cursor:pointer;
+    font-size:11px; color:var(--muted); font-family:inherit;
+  }
+  nav.tabs button .ic{display:block; font-size:20px; line-height:1.2}
+  nav.tabs button.on{color:var(--red); font-weight:700}
+  nav.tabs button .dot{
+    display:inline-block; width:7px; height:7px; background:var(--red); border-radius:50%;
+    vertical-align:top; margin-left:2px;
+  }
+
+  .qa{margin-bottom:12px}
+  .qa .q{font-weight:700; margin-bottom:2px}
+  .qa .a{font-size:13.5px; color:var(--muted)}
+  ol.disc{padding-left:20px; margin:8px 0}
+  ol.disc li{margin-bottom:10px}
+  ol.disc b{color:var(--red-dark)}
+  .empty{color:var(--muted); font-size:13.5px; padding:6px 2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <span class="logo">富禮一對一</span>
+    <span class="badge">互動原型</span>
+    <select id="identity" title="切換體驗身分"></select>
+  </header>
+
+  <div class="notice">
+    這是<strong>提案原型</strong>，所有成員與時段皆為虛構資料，操作不會真的送出任何預約。
+    可用右上角切換身分，體驗「約人」與「被約」兩種角色。
+  </div>
+
+  <main id="view"></main>
+
+  <nav class="tabs" id="tabs"></nav>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+'use strict';
+/* ---------------- 假資料 ---------------- */
+const AV_COLORS = ['#C0574F','#3F6E8C','#5D7A46','#8C5A79','#A0742B','#4F6F6A','#7A5C46','#54618C','#8C4F5F','#4E7A5D'];
+const DAY_NAMES = ['日','一','二','三','四','五','六'];
+
+const members = [
+  {id:1, name:'王大明', prof:'保險經紀'},
+  {id:2, name:'林美惠', prof:'房屋仲介'},
+  {id:3, name:'陳志豪', prof:'律師'},
+  {id:4, name:'張雅婷', prof:'會計師'},
+  {id:5, name:'李國榮', prof:'室內設計'},
+  {id:6, name:'黃淑芬', prof:'婚禮顧問'},
+  {id:7, name:'吳建宏', prof:'印刷輸出'},
+  {id:8, name:'劉心怡', prof:'行銷顧問'},
+  {id:9, name:'蔡明哲', prof:'企業貸款'},
+  {id:10, name:'郭佩珊', prof:'營養師'},
+];
+members.forEach((m,i)=>m.color=AV_COLORS[i%AV_COLORS.length]);
+
+/* 每週固定模式 {memberId, day(0-6), start, end}（24h 整點，原型以 1 小時為一格） */
+let patterns = [
+  {id:'p1', memberId:1, day:2, start:14, end:17},
+  {id:'p2', memberId:1, day:5, start:9,  end:12},
+  {id:'p3', memberId:2, day:1, start:10, end:12},
+  {id:'p4', memberId:2, day:4, start:14, end:16},
+  {id:'p5', memberId:3, day:3, start:16, end:18},
+  {id:'p6', memberId:4, day:2, start:9,  end:11},
+  {id:'p7', memberId:4, day:5, start:14, end:17},
+  {id:'p8', memberId:5, day:1, start:15, end:18},
+  {id:'p9', memberId:6, day:4, start:10, end:12},
+  {id:'p10',memberId:7, day:3, start:9,  end:12},
+  {id:'p11',memberId:8, day:2, start:16, end:18},
+  {id:'p12',memberId:9, day:5, start:10, end:12},
+  {id:'p13',memberId:10,day:1, start:9,  end:11},
+];
+/* 一次性加開 {memberId, date:'YYYY-MM-DD', start, end} */
+let extras = [];
+/* 例外（整天不開放）{memberId, date} */
+let blocks = [];
+
+/* 預約 {id, fromId, toId, date, start, status, msg}
+   status: requested | confirmed | declined | cancelled | completed | reschedule */
+let bookings = [];
+let bkSeq = 1;
+
+const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today = new Date(); today.setHours(0,0,0,0);
+function addDays(base,n){ const d=new Date(base); d.setDate(d.getDate()+n); return d; }
+function niceShort(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  return `${d.getMonth()+1}/${d.getDate()}（${DAY_NAMES[d.getDay()]}）`;
+}
+function nice(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const diff = Math.round((d-today)/86400000);
+  if(diff===0) return niceShort(dateStr)+'今天';
+  if(diff===1) return niceShort(dateStr)+'明天';
+  return niceShort(dateStr);
+}
+const hh = h => `${String(h).padStart(2,'0')}:00`;
+
+/* 種子預約：讓「我的預約」和「矩陣」一開始就有內容 */
+(function seed(){
+  const nextOf = (day,offset=1) => { // 下一個星期 day
+    let d=addDays(today,offset);
+    while(d.getDay()!==day) d=addDays(d,1);
+    return fmtDate(d);
+  };
+  bookings = [
+    {id:bkSeq++, fromId:2, toId:1, date:nextOf(2), start:15, status:'requested',
+     msg:'大明您好，想跟您聊聊保險與房產客戶互相引薦的機會，地點約在分會附近的路易莎如何？'},
+    {id:bkSeq++, fromId:1, toId:4, date:nextOf(5), start:14, status:'confirmed',
+     msg:'雅婷好，想請教年底報稅相關，也介紹我的新服務。'},
+    {id:bkSeq++, fromId:9, toId:1, date:nextOf(4,2), start:10, status:'requested',
+     msg:'想討論中小企業客戶的資金需求，看有沒有合作空間。'},
+    {id:bkSeq++, fromId:1, toId:3, date:fmtDate(addDays(today,-6)), start:16, status:'completed', msg:''},
+    {id:bkSeq++, fromId:5, toId:1, date:fmtDate(addDays(today,-13)), start:15, status:'completed', msg:''},
+    {id:bkSeq++, fromId:8, toId:2, date:nextOf(2,3), start:16, status:'confirmed', msg:''},
+  ];
+})();
+
+/* ---------------- 狀態 ---------------- */
+let me = 1;           // 目前身分
+let tab = 'members';  // members | bookings | matrix | avail | about
+let detailId = null;  // 成員個人頁
+
+/* ---------------- 可約時段計算（原型版）----------------
+   固定模式 ＋ 一次性加開 − 例外日 − 已占用（requested/confirmed） */
+function slotsOf(memberId, days=14){
+  const busy = new Set(bookings
+    .filter(b => ['requested','confirmed'].includes(b.status) && (b.toId===memberId||b.fromId===memberId))
+    .map(b => b.date+'#'+b.start));
+  const blocked = new Set(blocks.filter(b=>b.memberId===memberId).map(b=>b.date));
+  const out = [];
+  for(let i=1;i<=days;i++){
+    const d = addDays(today,i), ds = fmtDate(d);
+    if(blocked.has(ds)) continue;
+    const hours = new Set();
+    patterns.filter(p=>p.memberId===memberId && p.day===d.getDay())
+      .forEach(p=>{ for(let h=p.start;h<p.end;h++) hours.add(h); });
+    extras.filter(e=>e.memberId===memberId && e.date===ds)
+      .forEach(e=>{ for(let h=e.start;h<e.end;h++) hours.add(h); });
+    const free = [...hours].filter(h=>!busy.has(ds+'#'+h)).sort((a,b)=>a-b);
+    if(free.length) out.push({date:ds, hours:free});
+  }
+  return out;
+}
+
+/* ---------------- 共用元件 ---------------- */
+const el = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const avatar = (m,cls='') => `<div class="avatar ${cls}" style="background:${m.color}">${esc(m.name[0])}</div>`;
+const M = id => members.find(m=>m.id===id);
+
+let toastTimer;
+function toast(msg){
+  el('toast-root').innerHTML = `<div class="toast">${esc(msg)}</div>`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el('toast-root').innerHTML='',2600);
+}
+function modal(html){ el('modal-root').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`; }
+function closeModal(){ el('modal-root').innerHTML=''; }
+
+/* ---------------- 分頁 ---------------- */
+const TABS = [
+  {key:'members',  ic:'👥', label:'成員'},
+  {key:'bookings', ic:'📅', label:'我的預約'},
+  {key:'matrix',   ic:'▦',  label:'矩陣'},
+  {key:'avail',    ic:'🕒', label:'我的空檔'},
+  {key:'about',    ic:'💬', label:'說明'},
+];
+function renderTabs(){
+  const pending = bookings.filter(b=>b.toId===me && b.status==='requested').length;
+  el('tabs').innerHTML = TABS.map(t=>
+    `<button class="${tab===t.key?'on':''}" onclick="go('${t.key}')">
+       <span class="ic">${t.ic}</span>${t.label}${t.key==='bookings'&&pending?'<span class="dot"></span>':''}
+     </button>`).join('');
+}
+function go(t){ tab=t; detailId=null; render(); window.scrollTo(0,0); }
+
+/* ---------------- 畫面：成員列表 / 個人頁 ---------------- */
+function viewMembers(){
+  if(detailId) return viewMemberDetail(M(detailId));
+  const rows = members.filter(m=>m.id!==me).map(m=>{
+    const s = slotsOf(m.id);
+    const next = s.length ? `${niceShort(s[0].date)}<br>${hh(s[0].hours[0])} 起` : '近兩週無空檔';
+    return `<div class="card tap" onclick="openDetail(${m.id})">
+      <div class="member-row">
+        ${avatar(m)}
+        <div class="info"><div class="name">${esc(m.name)}</div><div class="prof">${esc(m.prof)}</div></div>
+        <div class="next ${s.length?'':'none'}">${next}</div>
+      </div></div>`;
+  }).join('');
+  return `<h2 class="sec">分會成員 <span class="count">（${members.length-1} 位，點選即可預約）</span></h2>${rows}`;
+}
+function openDetail(id){ detailId=id; render(); window.scrollTo(0,0); }
+
+function viewMemberDetail(m){
+  const slots = slotsOf(m.id);
+  const slotHtml = slots.length ? slots.map(s=>`
+    <div class="slot-day"><div class="d">${nice(s.date)}</div>
+      <div class="slots">${s.hours.map(h=>
+        `<button class="slot" onclick="askBook(${m.id},'${s.date}',${h})">${hh(h)}–${hh(h+1)}</button>`).join('')}
+      </div></div>`).join('')
+    : `<div class="empty">近兩週沒有開放時段。正式版會提供「請對方開時段」的敲門功能。</div>`;
+  return `
+    <button class="back" onclick="go('members')">‹ 返回成員列表</button>
+    <div class="card"><div class="member-row">
+      ${avatar(m)}
+      <div class="info"><div class="name">${esc(m.name)}</div><div class="prof">${esc(m.prof)}</div></div>
+      ${quarterStatus(m.id)}
+    </div></div>
+    <h2 class="sec">可約時段 <span class="count">（未來 14 天）</span></h2>
+    <div class="hint">點選時段送出預約請求，${esc(m.name)}確認後才算成立。</div>
+    ${slotHtml}`;
+}
+function quarterStatus(id){
+  const done = bookings.some(b=>b.status==='completed' && pair(b,id));
+  const going = bookings.some(b=>['requested','confirmed'].includes(b.status) && pair(b,id));
+  if(done) return `<span class="pill green">本季已一對一</span>`;
+  if(going) return `<span class="pill amber">進行中</span>`;
+  return `<span class="pill gray">本季尚未約</span>`;
+}
+const pair = (b,otherId) => (b.fromId===me&&b.toId===otherId)||(b.fromId===otherId&&b.toId===me);
+
+function askBook(toId,date,start){
+  const m = M(toId);
+  modal(`
+    <h3>預約 ${esc(m.name)} 的一對一</h3>
+    <div class="sub">${nice(date)} ${hh(start)}–${hh(start+1)}</div>
+    <textarea id="bk-msg" placeholder="留言給對方（選填）：想聊的主題、建議的地點…"></textarea>
+    <div class="btn-row">
+      <button class="btn subtle" onclick="closeModal()">取消</button>
+      <button class="btn primary" onclick="doBook(${toId},'${date}',${start})">送出預約請求</button>
+    </div>`);
+}
+function doBook(toId,date,start){
+  bookings.push({id:bkSeq++, fromId:me, toId, date, start, status:'requested', msg:el('bk-msg').value.trim()});
+  closeModal();
+  toast(`已送出請求，等待 ${M(toId).name} 確認（正式版會發 LINE 通知對方）`);
+  go('bookings');
+}
+
+/* ---------------- 畫面：我的預約 ---------------- */
+function bkCard(b, actionsHtml){
+  const other = M(b.fromId===me ? b.toId : b.fromId);
+  const dir = b.fromId===me ? '我約的' : '約我的';
+  return `<div class="card">
+    <div class="bk-head">
+      ${avatar(other)}
+      <div class="info">
+        <div><b>${esc(other.name)}</b>　<span class="prof" style="font-size:12px;color:var(--muted)">${esc(other.prof)}・${dir}</span></div>
+        <div class="bk-time">${nice(b.date)} ${hh(b.start)}–${hh(b.start+1)}</div>
+      </div>
+    </div>
+    ${b.msg?`<div class="bk-msg">💬 ${esc(b.msg)}</div>`:''}
+    ${actionsHtml||''}
+  </div>`;
+}
+function viewBookings(){
+  const inbox   = bookings.filter(b=>b.toId===me && b.status==='requested');
+  const waiting = bookings.filter(b=>b.fromId===me && b.status==='requested');
+  const coming  = bookings.filter(b=>b.status==='confirmed' && (b.fromId===me||b.toId===me));
+  const history = bookings.filter(b=>['completed','declined','cancelled','reschedule'].includes(b.status) && (b.fromId===me||b.toId===me));
+  let h='';
+  h += `<h2 class="sec">待我回應 <span class="count">（${inbox.length}）</span></h2>`;
+  h += inbox.length ? inbox.map(b=>bkCard(b,`
+      <div class="btn-row">
+        <button class="btn primary small" onclick="respond(${b.id},'confirmed')">確認</button>
+        <button class="btn ghost small" onclick="respond(${b.id},'reschedule')">提議改期</button>
+        <button class="btn ghost small" onclick="respond(${b.id},'declined')">婉拒</button>
+      </div>`)).join('') : `<div class="empty">沒有等待你回應的請求。</div>`;
+  h += `<h2 class="sec">等待對方確認 <span class="count">（${waiting.length}）</span></h2>`;
+  h += waiting.length ? waiting.map(b=>bkCard(b,`
+      <div class="btn-row"><button class="btn ghost small" onclick="respond(${b.id},'cancelled')">收回請求</button></div>`)).join('')
+    : `<div class="empty">沒有送出中的請求。到「成員」頁挑一位約看看。</div>`;
+  h += `<h2 class="sec">即將到來 <span class="count">（${coming.length}）</span></h2>`;
+  h += coming.length ? coming.map(b=>bkCard(b,`
+      <div class="btn-row">
+        <button class="btn primary small" onclick="respond(${b.id},'completed')">✓ 完成打卡</button>
+        <button class="btn ghost small" onclick="respond(${b.id},'reschedule')">改期</button>
+        <button class="btn ghost small" onclick="respond(${b.id},'cancelled')">取消</button>
+      </div>`)).join('') : `<div class="empty">沒有已確認的約訪。</div>`;
+  if(history.length){
+    h += `<h2 class="sec">歷史紀錄</h2>`;
+    h += history.map(b=>{
+      const label={completed:'<span class="pill green">已完成</span>',declined:'<span class="pill gray">已婉拒</span>',
+                   cancelled:'<span class="pill gray">已取消</span>',reschedule:'<span class="pill amber">改期協調中</span>'}[b.status];
+      return bkCard(b,`<div style="margin-top:8px">${label}</div>`);
+    }).join('');
+  }
+  return h;
+}
+function respond(id,status){
+  const b = bookings.find(x=>x.id===id); if(!b) return;
+  b.status = status;
+  const other = M(b.fromId===me?b.toId:b.fromId).name;
+  const msgs = {
+    confirmed:`已確認！正式版會發 LINE 通知 ${other}，並在前一天自動提醒雙方`,
+    declined:`已婉拒，正式版會通知 ${other}`,
+    cancelled:`已取消，正式版會通知 ${other}`,
+    reschedule:`已通知 ${other} 協調新時間（原型示意，正式版可直接回選新時段）`,
+    completed:`已打卡完成 🎉 一對一矩陣已更新，回報 PALMS 時可直接對照`,
+  };
+  toast(msgs[status]||'已更新'); render();
+}
+
+/* ---------------- 畫面：一對一矩陣 ---------------- */
+function viewMatrix(){
+  const others = members.filter(m=>m.id!==me);
+  let done=0,pending=0;
+  const cells = others.map(m=>{
+    const isDone = bookings.some(b=>b.status==='completed'&&pair(b,m.id));
+    const isGoing = bookings.some(b=>['requested','confirmed'].includes(b.status)&&pair(b,m.id));
+    if(isDone) done++; else if(isGoing) pending++;
+    const cls = isDone?'done':isGoing?'pending':'todo';
+    const st  = isDone?'✓ 已完成':isGoing?'進行中':'尚未約';
+    return `<div class="mcell ${cls}" onclick="openDetail(${m.id})">
+      ${avatar(m)}<div class="n">${esc(m.name)}</div><div class="s">${st}</div></div>`;
+  }).join('');
+  const q = Math.floor(today.getMonth()/3)+1;
+  return `
+    <h2 class="sec">一對一矩陣 <span class="count">${today.getFullYear()} 第 ${q} 季</span></h2>
+    <div class="stat-row">
+      <div class="stat"><div class="v">${done}</div><div class="l">已完成</div></div>
+      <div class="stat"><div class="v">${pending}</div><div class="l">進行中</div></div>
+      <div class="stat"><div class="v">${others.length-done-pending}</div><div class="l">還沒約</div></div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--green-soft);border:1px solid #BFE3CE"></i>已完成</span>
+      <span><i style="background:var(--amber-soft);border:1px solid #EBD9B4"></i>進行中</span>
+      <span><i style="background:#fff;border:1px solid var(--line)"></i>還沒約（點頭像直接發起）</span>
+    </div>
+    <div class="mgrid">${cells}</div>
+    <div class="hint" style="margin-top:14px">正式版規劃：每季自動歸零重新累計、次數統計與分會排行、PALMS 回報清單匯出。</div>`;
+}
+
+/* ---------------- 畫面：我的空檔 ---------------- */
+const dayOpts = sel => DAY_NAMES.map((d,i)=>`<option value="${i}" ${i===sel?'selected':''}>週${d}</option>`).join('');
+const hourOpts = sel => Array.from({length:14},(_,i)=>i+8).map(h=>`<option value="${h}" ${h===sel?'selected':''}>${hh(h)}</option>`).join('');
+
+function viewAvail(){
+  const my = patterns.filter(p=>p.memberId===me);
+  const myEx = extras.filter(e=>e.memberId===me);
+  const myBl = blocks.filter(b=>b.memberId===me);
+  return `
+    <h2 class="sec">每週固定模式</h2>
+    <div class="hint">設定一次長期有效，是你的「通常可以」時段。隨時可以增刪。</div>
+    <div class="card">
+      ${my.length?my.map(p=>`<div class="avail-item">
+          <div class="t">每<b>週${DAY_NAMES[p.day]}</b>　${hh(p.start)}–${hh(p.end)}</div>
+          <button class="del" title="刪除" onclick="delPattern('${p.id}')">✕</button>
+        </div>`).join(''):`<div class="empty">還沒有固定時段。</div>`}
+      <div class="add-form">
+        <select id="np-day">${dayOpts(2)}</select>
+        <select id="np-s">${hourOpts(14)}</select>–<select id="np-e">${hourOpts(16)}</select>
+        <button class="btn primary small" onclick="addPattern()">＋新增</button>
+      </div>
+    </div>
+
+    <h2 class="sec">一次性加開</h2>
+    <div class="hint">某天臨時有空？加開只屬於那一天的時段。</div>
+    <div class="card">
+      ${myEx.length?myEx.map((e,i)=>`<div class="avail-item">
+          <div class="t"><b>${nice(e.date)}</b>　${hh(e.start)}–${hh(e.end)}</div>
+          <button class="del" onclick="delExtra(${i})">✕</button>
+        </div>`).join(''):`<div class="empty">目前沒有加開時段。</div>`}
+      <div class="add-form">
+        <input type="date" id="nx-date" min="${fmtDate(addDays(today,1))}" value="${fmtDate(addDays(today,2))}">
+        <select id="nx-s">${hourOpts(10)}</select>–<select id="nx-e">${hourOpts(12)}</select>
+        <button class="btn primary small" onclick="addExtra()">＋加開</button>
+      </div>
+    </div>
+
+    <h2 class="sec">例外（整天不開放）</h2>
+    <div class="hint">出差、休假？挖掉那天，固定時段當週不生效。</div>
+    <div class="card">
+      ${myBl.length?myBl.map((b,i)=>`<div class="avail-item">
+          <div class="t"><b>${nice(b.date)}</b>　整天不開放</div>
+          <button class="del" onclick="delBlock(${i})">✕</button>
+        </div>`).join(''):`<div class="empty">目前沒有例外日。</div>`}
+      <div class="add-form">
+        <input type="date" id="nb-date" min="${fmtDate(addDays(today,1))}" value="${fmtDate(addDays(today,3))}">
+        <button class="btn primary small" onclick="addBlock()">＋挖除</button>
+      </div>
+    </div>
+    <div class="hint">💡 改完可以切到別的身分，到「成員」頁看你自己的可約時段即時變化。</div>`;
+}
+let pSeq = 100;
+function addPattern(){
+  const day=+el('np-day').value, s=+el('np-s').value, e=+el('np-e').value;
+  if(e<=s) return toast('結束時間要晚於開始時間');
+  patterns.push({id:'p'+(pSeq++), memberId:me, day, start:s, end:e});
+  toast('已新增固定時段'); render();
+}
+function delPattern(id){ patterns=patterns.filter(p=>p.id!==id); toast('已刪除'); render(); }
+function addExtra(){
+  const date=el('nx-date').value, s=+el('nx-s').value, e=+el('nx-e').value;
+  if(!date) return toast('請選日期');
+  if(e<=s) return toast('結束時間要晚於開始時間');
+  extras.push({memberId:me, date, start:s, end:e});
+  toast('已加開時段'); render();
+}
+function delExtra(i){ extras.splice(i,1); toast('已刪除'); render(); }
+function addBlock(){
+  const date=el('nb-date').value;
+  if(!date) return toast('請選日期');
+  blocks.push({memberId:me, date});
+  toast('已設為不開放'); render();
+}
+function delBlock(i){ blocks.splice(i,1); toast('已刪除'); render(); }
+
+/* ---------------- 畫面：說明 ---------------- */
+function viewAbout(){
+  return `
+    <h2 class="sec">這是什麼？</h2>
+    <div class="card">
+      <div class="qa"><div class="q">給富禮分會的一對一預約平台提案</div>
+        <div class="a">目標：把「你什麼時候有空？」的 LINE 來回，變成「看到時段 → 點一下 → 對方確認」。順便解決「這季還沒約過誰」和 PALMS 回報的記錄問題。</div></div>
+      <div class="qa"><div class="q">正式版跟這個原型差在哪？</div>
+        <div class="a">正式版用 LINE 登入（免密碼）、預約進度直接推 LINE 通知、約訪前一天自動提醒；資料是真的，這裡全是假的。</div></div>
+    </div>
+    <h2 class="sec">想請大家給意見的地方</h2>
+    <div class="card">
+      <ol class="disc">
+        <li><b>空檔設定方式</b>：「每週固定模式＋臨時加開／挖除」這套設定，你願意花 3 分鐘設定一次、之後偶爾維護嗎？</li>
+        <li><b>確認制</b>：別人約你之後需要你按「確認」才成立，這樣的保險程度剛好嗎？還是希望能直接成立？</li>
+        <li><b>通知</b>：預約相關通知走分會的 LINE 官方帳號推播，可以接受嗎？</li>
+        <li><b>矩陣公開程度</b>：一對一矩陣目前只看得到「自己跟誰約過」，需要看到全分會的完成狀況嗎（例如排行）？</li>
+        <li><b>還缺什麼</b>：有沒有什麼功能沒有它你就不會用？</li>
+      </ol>
+    </div>
+    <div class="hint">意見請直接回饋到分會 LINE 群，或跟提案人說。</div>`;
+}
+
+/* ---------------- 主渲染 ---------------- */
+function render(){
+  renderTabs();
+  const views = {members:viewMembers, bookings:viewBookings, matrix:viewMatrix, avail:viewAvail, about:viewAbout};
+  el('view').innerHTML = views[tab]();
+}
+function initIdentity(){
+  el('identity').innerHTML = members.map(m=>`<option value="${m.id}">👤 ${esc(m.name)}</option>`).join('');
+  el('identity').onchange = e => { me=+e.target.value; detailId=null; toast(`已切換為 ${M(me).name}（${M(me).prof}）`); render(); };
+}
+initIdentity();
+render();
+</script>
+</body>
+</html>
