@@ -51,9 +51,31 @@
 - [x] 更新 CLAUDE.md 中的 `[PROJECT_NAME]`
 - [x] 填寫 PRD.md
 - [x] 填寫 TECHSTACK.md
-- [ ] 執行 `/pm` 撰寫 IMPLEMENTATION-PLAN、建立 `/coder`、`/reviewer` subagent
+- [x] 執行 `/pm` 撰寫 IMPLEMENTATION-PLAN、建立 `/coder`、`/reviewer` subagent
 - [ ] 申請 LINE Developers channel（LINE Login + Messaging API）——需要用戶操作
 - [ ] 建立 Supabase 專案——需要用戶操作
+
+---
+
+## Session: 2026-07-02 09:10（/pm 實作規劃）
+
+### 變更摘要
+- 完成 IMPLEMENTATION-PLAN.md 初版：四階段規劃（基礎建設 → 核心功能 → LINE 整合 → 測試部署）
+- 建立 `/coder` subagent（全端開發，含領域規則與安全規範）
+- 建立 `/reviewer` subagent（安全/正確性/手機相容性三面向審查）
+- PRD subagent 狀態更新為已建立
+
+### 決策記錄
+- **LINE 整合獨立為 Phase 3**：LINE channel 尚未申請，Phase 1–2 以開發模式假登入（`DEV_AUTH` 環境變數切換）先完成核心功能，不被外部服務阻塞；auth 介面抽象化以便日後替換
+- **空檔計算引擎（2.1）列為 Phase 2 首項**：全案最複雜邏輯，做成純函數＋Vitest 測試先行，誤約風險最高的地方用測試守住
+- **站內通知中心（2.6）先於 LINE 推播**：通知事件先落表，LINE 推播只是多一個發送管道，避免 Phase 3 重工
+- **推播用量控制寫進計畫**（3.2 合併訊息、3.4 用量監控）：因免費方案 200 則/月限制
+
+### 待辦事項
+- [ ] 執行 `/coder` 開始 Phase 1（任務 1.1 起）
+- [ ] 申請 LINE Developers channel（LINE Login + Messaging API）——需要用戶操作，Phase 3 前完成即可
+- [ ] 建立 Supabase 專案——需要用戶操作（或 Phase 1 先用本機 `supabase start`）
+- [ ] Phase 1 完成後執行 `/reviewer` 首次審查
 
 ---
 
